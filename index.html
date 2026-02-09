@@ -526,7 +526,7 @@
                         'anthropic-version': '2023-06-01'
                     },
                     body: JSON.stringify({
-                        model: 'claude-sonnet-3-5-sonnet--20250514',
+                        model: 'claude-sonnet-4-20250514',
                         max_tokens: 1000,
                         messages: [{
                             role: 'user',
@@ -575,15 +575,30 @@ Fournis uniquement le courrier reformulé, sans commentaire additionnel.`
                     throw new Error('Réponse inattendue de l\'API');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                let errorMessage = 'Une erreur est survenue lors de la reformulation.';
+                console.error('Erreur complète:', error);
+                console.error('Message d\'erreur:', error.message);
+                
+                let errorMessage = '❌ Une erreur est survenue lors de la reformulation.\n\n';
                 
                 if (error.message.includes('authentication') || error.message.includes('401')) {
-                    errorMessage = '🔑 Clé API invalide.\n\nVeuillez vérifier votre clé API sur https://console.anthropic.com/settings/keys';
+                    errorMessage += '🔑 Problème de clé API\n\n';
+                    errorMessage += '✓ Vérifiez que votre clé commence bien par "sk-ant-"\n';
+                    errorMessage += '✓ Créez une nouvelle clé sur:\n';
+                    errorMessage += '   https://console.anthropic.com/settings/keys\n';
                 } else if (error.message.includes('quota') || error.message.includes('429')) {
-                    errorMessage = '⚠️ Quota dépassé.\n\nVeuillez vérifier votre crédit API sur https://console.anthropic.com/settings/billing';
-                } else if (error.message) {
-                    errorMessage += '\n\nDétails : ' + error.message;
+                    errorMessage += '⚠️ Quota ou limite dépassé(e)\n\n';
+                    errorMessage += '✓ Vérifiez vos crédits sur:\n';
+                    errorMessage += '   https://console.anthropic.com/settings/billing\n';
+                    errorMessage += '✓ Ajoutez un moyen de paiement si nécessaire\n';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage += '🌐 Problème de connexion\n\n';
+                    errorMessage += '✓ Vérifiez votre connexion Internet\n';
+                    errorMessage += '✓ Si vous utilisez un VPN, essayez de le désactiver\n';
+                    errorMessage += '✓ Assurez-vous d\'utiliser l\'URL GitHub Pages\n';
+                    errorMessage += '   (pas file:// en local)\n';
+                } else {
+                    errorMessage += '📋 Détails techniques:\n' + error.message + '\n\n';
+                    errorMessage += '💡 Ouvrez la console (F12) pour plus d\'informations';
                 }
                 
                 alert(errorMessage);
